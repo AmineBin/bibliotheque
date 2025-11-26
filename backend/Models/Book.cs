@@ -10,6 +10,7 @@ public class Book
     public enum Availability
     {
         InStock,
+        Reserved,
         OutOfStock,
         NotYetPublished, // For future books
         Discontinued, // No longer available and will probably never be
