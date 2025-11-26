@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 var builder = WebApplication.CreateBuilder(args);
 
 // TODO: enregistrer ici tes services (DbContext, repositories, etc.)
