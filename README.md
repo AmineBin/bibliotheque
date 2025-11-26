@@ -1,2 +1,2 @@
-# biblioth-que
+# bibliothèque
 Projet bibliothèque TP QualiteDev
