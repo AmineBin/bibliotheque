@@ -1,0 +1,37 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: bibliotheque-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: bibliotheque
+      MYSQL_USER: bibliouser
+      MYSQL_PASSWORD: bibliopass
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./bd:/docker-entrypoint-initdb.d
+
+  backend:
+    build: ./backend
+    container_name: bibliotheque-backend
+    depends_on:
+      - db
+    environment:
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__DefaultConnection: "Server=db;Port=3306;Database=bibliotheque;User=bibliouser;Password=bibliopass;"
+    ports:
+      - "5000:8080"
+
+  frontend:
+    build: ./frontend
+    container_name: bibliotheque-frontend
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+
+volumes:
+  db_data:
