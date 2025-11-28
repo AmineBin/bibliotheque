@@ -1,4 +1,4 @@
-﻿namespace Models;
+﻿namespace DefaultNamespace;
 
 public class Roles
 {

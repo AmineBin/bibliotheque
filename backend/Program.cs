@@ -5,8 +5,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.EntityFrameworkCore;
-using Models;
 using Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,9 +13,6 @@ var builder = WebApplication.CreateBuilder(args);
 var imagesFolder = "/app/data/images";
 builder.Services.AddSingleton(new ImageService(imagesFolder));
 
-builder.Services.AddDbContext<LibraryContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
-
 var app = builder.Build();
 
 app.UseHttpsRedirection();
@@ -25,41 +20,40 @@ app.UseHttpsRedirection();
 // Status
 app.MapGet("/status", () => new { status = "OK", timestamp = DateTime.UtcNow });
 
+var bookManager = BookManager.Instance;
+
 // GET /books
-app.MapGet("/books", async (LibraryContext db) =>
+app.MapGet("/books", () =>
 {
-    var books = await db.Books.ToListAsync();
-    return Results.Ok(books);
+    return Results.Ok(bookManager.ListBooks());
 });
 
 // GET /books/{id}
-app.MapGet("/books/{id:guid}", async (Guid id, LibraryContext db) =>
+app.MapGet("/books/{id:guid}", (Guid id) =>
 {
-    var book = await db.Books.FindAsync(id);
+    var book = bookManager.FindBookById(id);
     return book is null ? Results.NotFound() : Results.Ok(book);
 });
 
 // POST /books
-app.MapPost("/books", async (Book newBook, LibraryContext db) =>
+app.MapPost("/books", (Book newBook) =>
 {
     if (newBook.Id == Guid.Empty)
     {
         newBook.Id = Guid.NewGuid();
     }
 
-    db.Books.Add(newBook);
-    await db.SaveChangesAsync();
+    bookManager.AddBook(newBook);
     return Results.Created($"/books/{newBook.Id}", newBook);
 });
 
 // DELETE /books/{id}
-app.MapDelete("/books/{id:guid}", async (Guid id, LibraryContext db) =>
+app.MapDelete("/books/{id:guid}", (Guid id) =>
 {
-    var book = await db.Books.FindAsync(id);
+    var book = bookManager.FindBookById(id);
     if (book is null) return Results.NotFound();
 
-    db.Books.Remove(book);
-    await db.SaveChangesAsync();
+    bookManager.RemoveBook(book);
     return Results.NoContent();
 });
 

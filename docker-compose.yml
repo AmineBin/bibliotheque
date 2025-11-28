@@ -1,16 +1,18 @@
 services:
   db:
-    image: postgres:16
-    container_name: bibliotheque-postgres
+    image: mysql:8.0
+    container_name: bibliotheque-mysql
     restart: unless-stopped
     environment:
-      POSTGRES_DB: bibliotheque
-      POSTGRES_USER: bibliouser
-      POSTGRES_PASSWORD: bibliopass
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: bibliotheque
+      MYSQL_USER: bibliouser
+      MYSQL_PASSWORD: bibliopass
     ports:
-      - "5432:5432"
+      - "3306:3306"
     volumes:
-      - db_data:/var/lib/postgresql/data
+      - db_data:/var/lib/mysql
+      - ./bd:/docker-entrypoint-initdb.d
 
   backend:
     build: ./backend
@@ -19,7 +21,7 @@ services:
       - db
     environment:
       ASPNETCORE_URLS: http://+:8080
-      ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=bibliotheque;Username=bibliouser;Password=bibliopass"
+      ConnectionStrings__DefaultConnection: "Server=db;Port=3306;Database=bibliotheque;User=bibliouser;Password=bibliopass;"
     ports:
       - "5000:8080"
 
