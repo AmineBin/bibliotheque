@@ -1,52 +1,53 @@
 import { useState, useEffect } from 'react';
 import LoanCard from '../components/LoanCard';
+import { loansApi } from '../services/api';
 import '../styles/MyLoans.css';
 
 function MyLoans() {
   const [loans, setLoans] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
-  // Données simulées
-  const mockLoans = [
-    {
-      id: 1,
-      livre: { titre: 'Clean Code', auteur: 'Robert C. Martin' },
-      dateEmprunt: '2024-01-15',
-      dateRetourPrevue: '2024-02-15',
-      dateRetourEffective: null,
-      statut: 'en_cours'
-    },
-    {
-      id: 2,
-      livre: { titre: 'Design Patterns', auteur: 'Gang of Four' },
-      dateEmprunt: '2024-01-10',
-      dateRetourPrevue: '2024-02-10',
-      dateRetourEffective: '2024-02-08',
-      statut: 'rendu'
-    },
-  ];
-
-  useEffect(() => {
+  const loadLoans = async () => {
     setLoading(true);
-    // TODO: Charger les emprunts depuis l'API
-    setTimeout(() => {
-      setLoans(mockLoans);
+    setError('');
+    try {
+      const data = await loansApi.getMyLoans();
+      setLoans(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
       setLoading(false);
-    }, 500);
-  }, []);
-
-  const handleReturn = (loanId) => {
-    // TODO: Implémenter le retour via API
-    alert(`Retour de l'emprunt ${loanId} demandé`);
+    }
   };
 
-  const activeLoans = loans.filter(loan => loan.statut === 'en_cours');
-  const returnedLoans = loans.filter(loan => loan.statut === 'rendu');
+  useEffect(() => {
+    loadLoans();
+  }, []);
+
+  const handleReturn = async (loanId) => {
+    setError('');
+    setSuccess('');
+    try {
+      await loansApi.return(loanId);
+      setSuccess('Livre rendu avec succès !');
+      loadLoans();
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const activeLoans = loans.filter(loan => loan.status === 'active');
+  const returnedLoans = loans.filter(loan => loan.status === 'returned');
 
   return (
     <div className="my-loans">
       <h1>Mes emprunts</h1>
       
+      {error && <div className="error-message">{error}</div>}
+      {success && <div className="success-message">{success}</div>}
+
       <section className="loans-section">
         <h2>En cours ({activeLoans.length})</h2>
         {loading ? (

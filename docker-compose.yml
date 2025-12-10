@@ -13,15 +13,25 @@ services:
     volumes:
       - db_data:/var/lib/mysql
       - ./bd:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   backend:
     build: ./backend
     container_name: bibliotheque-backend
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     environment:
       ASPNETCORE_URLS: http://+:8080
       ConnectionStrings__DefaultConnection: "Server=db;Port=3306;Database=bibliotheque;User=bibliouser;Password=bibliopass;"
+      Jwt__Key: "BibliothequeSecretKey2025SuperSecure!AtLeast32Characters"
+      Jwt__Issuer: "BibliothequeApi"
+      Jwt__Audience: "BibliothequeApp"
+      Jwt__ExpireMinutes: "60"
     ports:
       - "5000:8080"
 

@@ -1,36 +1,37 @@
 import '../styles/LoanCard.css';
 
 function LoanCard({ loan, onReturn }) {
-  const isLate = loan.statut === 'en_cours' && new Date(loan.dateRetourPrevue) < new Date();
+  const isActive = loan.status === 'active';
+  const isLate = isActive && new Date(loan.dueDate) < new Date();
   
   return (
     <div className={`loan-card ${isLate ? 'late' : ''}`}>
       <div className="loan-header">
-        <h3>{loan.livre.titre}</h3>
-        <span className={`loan-status ${loan.statut}`}>
-          {loan.statut === 'en_cours' ? 'En cours' : 'Rendu'}
+        <h3>{loan.bookTitle}</h3>
+        <span className={`loan-status ${loan.status}`}>
+          {isActive ? 'En cours' : 'Rendu'}
         </span>
       </div>
-      <p className="loan-author">{loan.livre.auteur}</p>
+      <p className="loan-author">{loan.bookAuthor}</p>
       <div className="loan-dates">
         <div>
-          <strong>Emprunté le:</strong> {new Date(loan.dateEmprunt).toLocaleDateString('fr-FR')}
+          <strong>Emprunte le:</strong> {new Date(loan.loanDate).toLocaleDateString('fr-FR')}
         </div>
         <div>
-          <strong>Retour prévu:</strong> {new Date(loan.dateRetourPrevue).toLocaleDateString('fr-FR')}
+          <strong>Retour prevu:</strong> {new Date(loan.dueDate).toLocaleDateString('fr-FR')}
         </div>
-        {loan.dateRetourEffective && (
+        {loan.returnDate && (
           <div>
-            <strong>Retourné le:</strong> {new Date(loan.dateRetourEffective).toLocaleDateString('fr-FR')}
+            <strong>Retourne le:</strong> {new Date(loan.returnDate).toLocaleDateString('fr-FR')}
           </div>
         )}
       </div>
       {isLate && (
         <div className="late-warning">
-          ⚠️ Retour en retard !
+          Retour en retard !
         </div>
       )}
-      {loan.statut === 'en_cours' && (
+      {isActive && (
         <button onClick={() => onReturn(loan.id)} className="btn-return">
           Retourner
         </button>

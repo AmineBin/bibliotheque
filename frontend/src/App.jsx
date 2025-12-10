@@ -12,6 +12,17 @@ function PrivateRoute({ children }) {
   return user ? children : <Navigate to="/" />;
 }
 
+function LibrarianRoute({ children }) {
+  const userStr = localStorage.getItem('user');
+  if (!userStr) return <Navigate to="/" />;
+  
+  const user = JSON.parse(userStr);
+  if (user.role?.toLowerCase() !== 'librarian') {
+    return <Navigate to="/search" />;
+  }
+  return children;
+}
+
 function App() {
   return (
     <Router>
@@ -46,27 +57,27 @@ function App() {
         <Route
           path="/management"
           element={
-            <PrivateRoute>
+            <LibrarianRoute>
               <>
                 <Header />
                 <div className="container">
                   <BookManagement />
                 </div>
               </>
-            </PrivateRoute>
+            </LibrarianRoute>
           }
         />
         <Route
           path="/dashboard"
           element={
-            <PrivateRoute>
+            <LibrarianRoute>
               <>
                 <Header />
                 <div className="container">
                   <Dashboard />
                 </div>
               </>
-            </PrivateRoute>
+            </LibrarianRoute>
           }
         />
       </Routes>

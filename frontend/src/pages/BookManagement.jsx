@@ -1,61 +1,86 @@
 import { useState, useEffect } from 'react';
+import { booksApi } from '../services/api';
 import '../styles/BookManagement.css';
 
 function BookManagement() {
   const [books, setBooks] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [editingBook, setEditingBook] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const [formData, setFormData] = useState({
-    titre: '',
-    auteur: '',
+    title: '',
+    author: '',
     isbn: '',
-    disponible: true
+    description: '',
+    publicationYear: '',
+    availability: 'available'
   });
 
-  // Données simulées
-  const mockBooks = [
-    { id: 1, titre: 'Clean Code', auteur: 'Robert C. Martin', isbn: '978-0132350884', disponible: true },
-    { id: 2, titre: 'Design Patterns', auteur: 'Gang of Four', isbn: '978-0201633610', disponible: true },
-  ];
+  const loadBooks = async () => {
+    setLoading(true);
+    try {
+      const data = await booksApi.getAll();
+      setBooks(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    // TODO: Charger les livres depuis l'API
-    setBooks(mockBooks);
+    loadBooks();
   }, []);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (editingBook) {
-      // TODO: Mettre à jour via API
-      setBooks(books.map(b => b.id === editingBook.id ? { ...editingBook, ...formData } : b));
-    } else {
-      // TODO: Ajouter via API
-      const newBook = { ...formData, id: Date.now() };
-      setBooks([...books, newBook]);
+    setError('');
+    
+    const bookData = {
+      ...formData,
+      publicationYear: formData.publicationYear ? parseInt(formData.publicationYear) : null
+    };
+
+    try {
+      if (editingBook) {
+        await booksApi.update(editingBook.id, bookData);
+      } else {
+        await booksApi.create(bookData);
+      }
+      loadBooks();
+      resetForm();
+    } catch (err) {
+      setError(err.message);
     }
-    resetForm();
   };
 
   const handleEdit = (book) => {
     setEditingBook(book);
     setFormData({
-      titre: book.titre,
-      auteur: book.auteur,
-      isbn: book.isbn,
-      disponible: book.disponible
+      title: book.title,
+      author: book.author,
+      isbn: book.isbn || '',
+      description: book.description || '',
+      publicationYear: book.publicationYear || '',
+      availability: book.availability
     });
     setShowForm(true);
   };
 
-  const handleDelete = (bookId) => {
-    if (confirm('Êtes-vous sûr de vouloir supprimer ce livre ?')) {
-      // TODO: Supprimer via API
-      setBooks(books.filter(b => b.id !== bookId));
+  const handleDelete = async (bookId) => {
+    if (confirm('Etes-vous sur de vouloir supprimer ce livre ?')) {
+      try {
+        await booksApi.delete(bookId);
+        loadBooks();
+      } catch (err) {
+        setError(err.message);
+      }
     }
   };
 
   const resetForm = () => {
-    setFormData({ titre: '', auteur: '', isbn: '', disponible: true });
+    setFormData({ title: '', author: '', isbn: '', description: '', publicationYear: '', availability: 'available' });
     setEditingBook(null);
     setShowForm(false);
   };
@@ -69,6 +94,8 @@ function BookManagement() {
         </button>
       </div>
 
+      {error && <div className="error-message">{error}</div>}
+
       {showForm && (
         <div className="modal-overlay" onClick={resetForm}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -78,8 +105,8 @@ function BookManagement() {
                 <label>Titre</label>
                 <input
                   type="text"
-                  value={formData.titre}
-                  onChange={(e) => setFormData({ ...formData, titre: e.target.value })}
+                  value={formData.title}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                   required
                 />
               </div>
@@ -87,8 +114,8 @@ function BookManagement() {
                 <label>Auteur</label>
                 <input
                   type="text"
-                  value={formData.auteur}
-                  onChange={(e) => setFormData({ ...formData, auteur: e.target.value })}
+                  value={formData.author}
+                  onChange={(e) => setFormData({ ...formData, author: e.target.value })}
                   required
                 />
               </div>
@@ -98,18 +125,33 @@ function BookManagement() {
                   type="text"
                   value={formData.isbn}
                   onChange={(e) => setFormData({ ...formData, isbn: e.target.value })}
-                  required
                 />
               </div>
-              <div className="form-group checkbox-group">
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={formData.disponible}
-                    onChange={(e) => setFormData({ ...formData, disponible: e.target.checked })}
-                  />
-                  Disponible
-                </label>
+              <div className="form-group">
+                <label>Description</label>
+                <textarea
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                />
+              </div>
+              <div className="form-group">
+                <label>Annee de publication</label>
+                <input
+                  type="number"
+                  value={formData.publicationYear}
+                  onChange={(e) => setFormData({ ...formData, publicationYear: e.target.value })}
+                />
+              </div>
+              <div className="form-group">
+                <label>Disponibilite</label>
+                <select
+                  value={formData.availability}
+                  onChange={(e) => setFormData({ ...formData, availability: e.target.value })}
+                >
+                  <option value="available">Disponible</option>
+                  <option value="borrowed">Emprunte</option>
+                  <option value="reserved">Reserve</option>
+                </select>
               </div>
               <div className="form-actions">
                 <button type="button" onClick={resetForm} className="btn-secondary">
@@ -124,39 +166,45 @@ function BookManagement() {
         </div>
       )}
 
-      <table className="books-table">
-        <thead>
-          <tr>
-            <th>Titre</th>
-            <th>Auteur</th>
-            <th>ISBN</th>
-            <th>Disponible</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {books.map(book => (
-            <tr key={book.id}>
-              <td>{book.titre}</td>
-              <td>{book.auteur}</td>
-              <td>{book.isbn}</td>
-              <td>
-                <span className={`status ${book.disponible ? 'available' : 'unavailable'}`}>
-                  {book.disponible ? 'Oui' : 'Non'}
-                </span>
-              </td>
-              <td>
-                <button onClick={() => handleEdit(book)} className="btn-edit">
-                  Modifier
-                </button>
-                <button onClick={() => handleDelete(book.id)} className="btn-delete">
-                  Supprimer
-                </button>
-              </td>
+      {loading ? (
+        <div className="loading">Chargement...</div>
+      ) : (
+        <table className="books-table">
+          <thead>
+            <tr>
+              <th>Titre</th>
+              <th>Auteur</th>
+              <th>ISBN</th>
+              <th>Annee</th>
+              <th>Disponible</th>
+              <th>Actions</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {books.map(book => (
+              <tr key={book.id}>
+                <td>{book.title}</td>
+                <td>{book.author}</td>
+                <td>{book.isbn || '-'}</td>
+                <td>{book.publicationYear || '-'}</td>
+                <td>
+                  <span className={`status ${book.availability === 'available' ? 'available' : 'unavailable'}`}>
+                    {book.availability === 'available' ? 'Oui' : 'Non'}
+                  </span>
+                </td>
+                <td>
+                  <button onClick={() => handleEdit(book)} className="btn-edit">
+                    Modifier
+                  </button>
+                  <button onClick={() => handleDelete(book.id)} className="btn-delete">
+                    Supprimer
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
     </div>
   );
 }

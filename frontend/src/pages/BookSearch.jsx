@@ -1,47 +1,47 @@
 import { useState, useEffect } from 'react';
 import BookCard from '../components/BookCard';
+import { booksApi, loansApi } from '../services/api';
 import '../styles/BookSearch.css';
 
 function BookSearch() {
   const [books, setBooks] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
-  // Données simulées - à remplacer par un appel API
-  const mockBooks = [
-    { id: 1, titre: 'Clean Code', auteur: 'Robert C. Martin', isbn: '978-0132350884', disponible: true },
-    { id: 2, titre: 'Design Patterns', auteur: 'Gang of Four', isbn: '978-0201633610', disponible: true },
-    { id: 3, titre: 'The Pragmatic Programmer', auteur: 'Hunt & Thomas', isbn: '978-0135957059', disponible: false },
-    { id: 4, titre: 'Refactoring', auteur: 'Martin Fowler', isbn: '978-0134757599', disponible: true },
-  ];
+  const loadBooks = async (search = '') => {
+    setLoading(true);
+    setError('');
+    try {
+      const data = await booksApi.getAll(search);
+      setBooks(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    // Simuler le chargement des livres
-    setLoading(true);
-    setTimeout(() => {
-      setBooks(mockBooks);
-      setLoading(false);
-    }, 500);
+    loadBooks();
   }, []);
 
   const handleSearch = (e) => {
     e.preventDefault();
-    setLoading(true);
-    // TODO: Appeler l'API backend pour rechercher des livres
-    setTimeout(() => {
-      const filtered = mockBooks.filter(book =>
-        book.titre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        book.auteur.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        book.isbn.includes(searchTerm)
-      );
-      setBooks(filtered);
-      setLoading(false);
-    }, 300);
+    loadBooks(searchTerm);
   };
 
-  const handleBorrow = (bookId) => {
-    // TODO: Implémenter l'emprunt via API
-    alert(`Emprunt du livre ${bookId} demandé`);
+  const handleBorrow = async (bookId) => {
+    setError('');
+    setSuccess('');
+    try {
+      await loansApi.borrow(bookId);
+      setSuccess('Livre emprunté avec succès !');
+      loadBooks(searchTerm);
+    } catch (err) {
+      setError(err.message);
+    }
   };
 
   return (
@@ -58,12 +58,15 @@ function BookSearch() {
         <button type="submit" className="btn-primary">Rechercher</button>
       </form>
 
+      {error && <div className="error-message">{error}</div>}
+      {success && <div className="success-message">{success}</div>}
+
       {loading ? (
         <div className="loading">Chargement...</div>
       ) : (
         <div className="books-grid">
           {books.length === 0 ? (
-            <p>Aucun livre trouvé 📖</p>
+            <p>Aucun livre trouvé</p>
           ) : (
             books.map(book => (
               <BookCard key={book.id} book={book} onBorrow={handleBorrow} />

@@ -1,27 +1,40 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { authApi } from '../services/api';
 import '../styles/Login.css';
 
 function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // TODO: Implémenter l'authentification avec le backend
-    // Pour l'instant, simulation simple
-    if (email && password) {
-      localStorage.setItem('user', JSON.stringify({ email, role: 'librarian' }));
+    setError('');
+    setLoading(true);
+    
+    try {
+      const result = await authApi.login(email, password);
+      localStorage.setItem('user', JSON.stringify({
+        ...result.user,
+        token: result.token
+      }));
       navigate('/search');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="login-container">
       <div className="login-card">
-        <h1>Bibliothèque Universitaire</h1>
+        <h1>Bibliotheque Universitaire</h1>
         <h2>Connexion</h2>
+        {error && <div className="error-message">{error}</div>}
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label htmlFor="email">Email</label>
@@ -43,7 +56,9 @@ function Login() {
               required
             />
           </div>
-          <button type="submit" className="btn-primary">Se connecter</button>
+          <button type="submit" className="btn-primary" disabled={loading}>
+            {loading ? 'Connexion...' : 'Se connecter'}
+          </button>
         </form>
       </div>
     </div>
