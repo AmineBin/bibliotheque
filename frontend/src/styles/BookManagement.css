@@ -1,17 +1,43 @@
 .book-management {
   padding: 20px 0;
   min-height: calc(100vh - 100px);
+  animation: fadeIn 0.6s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .header-actions {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 30px;
+  margin-bottom: 40px;
+  animation: slideInDown 0.6s ease-out;
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .header-actions h1 {
-  color: #333;
+  font-size: 2.5rem;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .modal-overlay {
@@ -20,26 +46,46 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
+  animation: fadeIn 0.3s ease-out;
 }
 
 .modal-content {
-  background: white;
-  padding: 30px;
-  border-radius: 10px;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  padding: 40px;
+  border-radius: 20px;
   width: 90%;
-  max-width: 500px;
+  max-width: 550px;
   max-height: 90vh;
   overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  border: 2px solid var(--border);
+  animation: slideInUp 0.4s ease-out;
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .modal-content h2 {
-  margin-bottom: 20px;
-  color: #333;
+  margin-bottom: 30px;
+  font-size: 1.8rem;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .checkbox-group {
@@ -60,73 +106,129 @@
 
 .form-actions {
   display: flex;
-  gap: 10px;
-  margin-top: 20px;
+  gap: 15px;
+  margin-top: 30px;
 }
 
 .form-actions button {
   flex: 1;
+  padding: 12px;
+  font-size: 15px;
+}
+
+.file-input {
+  padding: 12px;
+  border: 2px dashed var(--border);
+  border-radius: 10px;
+  background: var(--bg-secondary);
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.file-input:hover {
+  border-color: var(--primary);
+  background: rgba(99, 102, 241, 0.05);
+}
+
+.file-selected {
+  margin-top: 10px;
+  color: var(--success);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.current-image {
+  margin-top: 10px;
+  color: var(--text-secondary);
+  font-size: 14px;
 }
 
 .books-table {
   width: 100%;
-  background: white;
-  border-radius: 10px;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border: 2px solid var(--border);
+  animation: fadeInUp 0.8s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .books-table thead {
-  background-color: #f8f9fa;
+  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
 }
 
 .books-table th,
 .books-table td {
-  padding: 15px;
+  padding: 18px;
   text-align: left;
 }
 
 .books-table th {
-  font-weight: 600;
-  color: #333;
-  border-bottom: 2px solid #dee2e6;
+  font-weight: 700;
+  color: var(--text-primary);
+  border-bottom: 2px solid var(--border);
+  text-transform: uppercase;
+  font-size: 12px;
+  letter-spacing: 0.05em;
 }
 
 .books-table tbody tr {
-  border-bottom: 1px solid #dee2e6;
+  border-bottom: 1px solid var(--border);
+  transition: all 0.3s;
 }
 
 .books-table tbody tr:hover {
-  background-color: #f8f9fa;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  transform: scale(1.01);
 }
 
 .btn-edit,
 .btn-delete {
-  padding: 6px 12px;
+  padding: 8px 16px;
   border: none;
-  border-radius: 5px;
+  border-radius: 8px;
   cursor: pointer;
-  font-size: 14px;
-  margin-right: 5px;
-  transition: background-color 0.3s;
+  font-size: 13px;
+  font-weight: 600;
+  margin-right: 8px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
 }
 
 .btn-edit {
-  background-color: #007bff;
+  background: linear-gradient(135deg, var(--info) 0%, #2563eb 100%);
   color: white;
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
 }
 
 .btn-edit:hover {
-  background-color: #0056b3;
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(59, 130, 246, 0.4);
 }
 
 .btn-delete {
-  background-color: #dc3545;
+  background: linear-gradient(135deg, var(--danger) 0%, #dc2626 100%);
   color: white;
+  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
 }
 
 .btn-delete:hover {
-  background-color: #c82333;
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(239, 68, 68, 0.4);
 }
 
 /* Responsive Design */
@@ -205,4 +307,29 @@
   .form-actions button {
     width: 100%;
   }
+}
+
+/* Types de livres */
+.book-type {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.book-type.level-1 {
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  color: white;
+}
+
+.book-type.level-2 {
+  background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+  color: white;
+}
+
+.book-type.level-3 {
+  background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+  color: white;
 }

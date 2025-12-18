@@ -27,7 +27,7 @@ public class UserRepository : IUserRepository
         const string sql = @"
             SELECT u.id, u.email, u.password_hash AS PasswordHash, u.first_name AS FirstName, 
                    u.last_name AS LastName, u.role_id AS RoleId, u.created_at AS CreatedAt,
-                   r.name AS RoleName
+                   r.name AS RoleName, r.access_level AS AccessLevel
             FROM users u
             JOIN roles r ON u.role_id = r.id
             WHERE u.email = @Email";
@@ -41,7 +41,7 @@ public class UserRepository : IUserRepository
         const string sql = @"
             SELECT u.id, u.email, u.password_hash AS PasswordHash, u.first_name AS FirstName, 
                    u.last_name AS LastName, u.role_id AS RoleId, u.created_at AS CreatedAt,
-                   r.name AS RoleName
+                   r.name AS RoleName, r.access_level AS AccessLevel
             FROM users u
             JOIN roles r ON u.role_id = r.id
             WHERE u.id = @Id";

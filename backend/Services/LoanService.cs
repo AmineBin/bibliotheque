@@ -99,6 +99,7 @@ public class LoanService : ILoanService
     public async Task<DashboardStatsDto> GetDashboardStatsAsync()
     {
         var stats = await _loanRepository.GetStatsAsync();
+        var popularBooks = await _loanRepository.GetPopularBooksAsync(5);
         
         return new DashboardStatsDto
         {
@@ -107,7 +108,11 @@ public class LoanService : ILoanService
             ActiveLoans = stats.ActiveLoans,
             OverdueLoans = stats.OverdueLoans,
             TotalUsers = stats.TotalUsers,
-            PopularBooks = new List<PopularBookDto>() // TODO: implementer les livres populaires
+            PopularBooks = popularBooks.Select(p => new PopularBookDto
+            {
+                Title = p.Title,
+                LoanCount = p.LoanCount
+            }).ToList()
         };
     }
 

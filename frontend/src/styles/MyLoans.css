@@ -1,27 +1,67 @@
 .my-loans {
   padding: 20px 0;
   min-height: calc(100vh - 100px);
+  animation: fadeIn 0.6s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .my-loans h1 {
-  margin-bottom: 30px;
-  color: #333;
+  margin-bottom: 40px;
+  font-size: 2.5rem;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .loans-section {
-  margin-bottom: 40px;
+  margin-bottom: 50px;
+  animation: slideInUp 0.6s ease-out;
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .loans-section h2 {
-  color: #555;
-  margin-bottom: 20px;
-  font-size: 24px;
+  color: var(--text-primary);
+  margin-bottom: 25px;
+  font-size: 1.8rem;
+  font-weight: 700;
+  position: relative;
+  padding-bottom: 10px;
+}
+
+.loans-section h2::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 60px;
+  height: 4px;
+  background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
+  border-radius: 2px;
 }
 
 .loans-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  gap: 25px;
 }
 
 /* Responsive Design */

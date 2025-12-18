@@ -1,8 +1,9 @@
 namespace Bibliotheque.Api.Models.Entities;
 
-public class Role
+public class BookType
 {
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
-    public int AccessLevel { get; set; } = 1;
+    public string? Description { get; set; }
+    public int MinAccessLevel { get; set; } = 1;
 }

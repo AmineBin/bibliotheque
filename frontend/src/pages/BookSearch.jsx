@@ -10,11 +10,18 @@ function BookSearch() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
+  // Vérifie si l'utilisateur est connecté
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const isLoggedIn = !!user.token;
+
   const loadBooks = async (search = '') => {
     setLoading(true);
     setError('');
     try {
-      const data = await booksApi.getAll(search);
+      // Utilise l'endpoint filtré si connecté, sinon tous les livres
+      const data = isLoggedIn
+        ? await booksApi.getAllForUser(search)
+        : await booksApi.getAll(search);
       setBooks(data);
     } catch (err) {
       setError(err.message);

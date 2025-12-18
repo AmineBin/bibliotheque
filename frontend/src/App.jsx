@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Header from './components/Header';
 import Login from './pages/Login';
+import Register from './pages/Register';
 import BookSearch from './pages/BookSearch';
 import MyLoans from './pages/MyLoans';
 import BookManagement from './pages/BookManagement';
@@ -28,6 +29,7 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<Login />} />
+        <Route path="/register" element={<Register />} />
         <Route
           path="/search"
           element={

@@ -14,6 +14,7 @@ public class CreateBookRequest
     public string? Description { get; set; }
     public int? PublicationYear { get; set; }
     public string Availability { get; set; } = "available";
+    public int TypeId { get; set; } = 1;
 }
 
 public class UpdateBookRequest
@@ -28,6 +29,8 @@ public class UpdateBookRequest
     public string? Description { get; set; }
     public int? PublicationYear { get; set; }
     public string Availability { get; set; } = "available";
+    public string? ImagePath { get; set; }
+    public int TypeId { get; set; } = 1;
 }
 
 public class BookDto
@@ -40,4 +43,15 @@ public class BookDto
     public int? PublicationYear { get; set; }
     public string Availability { get; set; } = string.Empty;
     public string? ImagePath { get; set; }
+    public int TypeId { get; set; }
+    public string TypeName { get; set; } = string.Empty;
+    public int MinAccessLevel { get; set; }
+}
+
+public class BookTypeDto
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string? Description { get; set; }
+    public int MinAccessLevel { get; set; }
 }

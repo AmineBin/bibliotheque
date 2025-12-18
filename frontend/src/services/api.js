@@ -56,6 +56,24 @@ export const booksApi = {
     return response.json();
   },
 
+  // Récupère les livres filtrés selon le niveau d'accès de l'utilisateur
+  getAllForUser: async (search = '') => {
+    const url = search ? `${API_URL}/books/user?search=${encodeURIComponent(search)}` : `${API_URL}/books/user`;
+    let response = await fetch(url, {
+      headers: getAuthHeaders()
+    });
+    response = await handleResponse(response);
+    if (!response.ok) throw new Error('Erreur lors du chargement des livres');
+    return response.json();
+  },
+
+  // Récupère tous les types de livres
+  getTypes: async () => {
+    const response = await fetch(`${API_URL}/books/types`);
+    if (!response.ok) throw new Error('Erreur lors du chargement des types de livres');
+    return response.json();
+  },
+
   getById: async (id) => {
     const response = await fetch(`${API_URL}/books/${id}`);
     if (!response.ok) throw new Error('Livre non trouve');
@@ -92,6 +110,38 @@ export const booksApi = {
     response = await handleResponse(response);
     if (!response.ok) throw new Error('Erreur lors de la suppression du livre');
     return true;
+  },
+
+  uploadImage: async (bookId, file) => {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    let response = await fetch(`${API_URL}/books/${bookId}/image`, {
+      method: 'POST',
+      headers: {
+        ...(user.token ? { 'Authorization': `Bearer ${user.token}` } : {})
+      },
+      body: formData
+    });
+    response = await handleResponse(response);
+    if (!response.ok) throw new Error('Erreur lors de l\'upload de l\'image');
+    return response.json();
+  },
+
+  deleteImage: async (bookId) => {
+    let response = await fetch(`${API_URL}/books/${bookId}/image`, {
+      method: 'DELETE',
+      headers: getAuthHeaders()
+    });
+    response = await handleResponse(response);
+    if (!response.ok) throw new Error('Erreur lors de la suppression de l\'image');
+    return true;
+  },
+
+  getImageUrl: (imagePath) => {
+    if (!imagePath) return null;
+    return `${API_URL}/images/books/${imagePath}`;
   }
 };
 

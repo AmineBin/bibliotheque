@@ -8,7 +8,8 @@ function Dashboard() {
     availableBooks: 0,
     activeLoans: 0,
     overdueLoans: 0,
-    totalUsers: 0
+    totalUsers: 0,
+    popularBooks: []
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -70,6 +71,21 @@ function Dashboard() {
           </div>
         </div>
       </div>
+
+      {stats.popularBooks && stats.popularBooks.length > 0 && (
+        <div className="popular-books">
+          <h2>📚 Livres les plus empruntés</h2>
+          <div className="popular-books-list">
+            {stats.popularBooks.map((book, index) => (
+              <div key={index} className="popular-book-item">
+                <div className="rank">{index + 1}</div>
+                <div className="book-title">{book.title}</div>
+                <div className="loan-count">{book.loanCount} emprunts</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

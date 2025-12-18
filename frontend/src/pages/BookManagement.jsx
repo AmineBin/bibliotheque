@@ -1,32 +1,48 @@
 import { useState, useEffect } from 'react';
-import { booksApi } from '../services/api';
+import { booksApi, loansApi } from '../services/api';
 import '../styles/BookManagement.css';
 
 function BookManagement() {
   const [books, setBooks] = useState([]);
+  const [loans, setLoans] = useState([]);
+  const [bookTypes, setBookTypes] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [editingBook, setEditingBook] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [imageFile, setImageFile] = useState(null);
   const [formData, setFormData] = useState({
     title: '',
     author: '',
     isbn: '',
     description: '',
     publicationYear: '',
-    availability: 'available'
+    availability: 'available',
+    typeId: 1
   });
 
   const loadBooks = async () => {
     setLoading(true);
     try {
-      const data = await booksApi.getAll();
-      setBooks(data);
+      const [booksData, loansData, typesData] = await Promise.all([
+        booksApi.getAll(),
+        loansApi.getAll(),
+        booksApi.getTypes()
+      ]);
+      setBooks(booksData);
+      setLoans(loansData.filter(l => l.status === 'active'));
+      setBookTypes(typesData);
     } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
+  };
+
+  // Fonction pour trouver l'emprunteur d'un livre
+  const getBorrowerName = (bookId) => {
+    const loan = loans.find(l => l.bookId === bookId);
+    return loan ? loan.userName : null;
   };
 
   useEffect(() => {
@@ -43,11 +59,18 @@ function BookManagement() {
     };
 
     try {
+      let book;
       if (editingBook) {
-        await booksApi.update(editingBook.id, bookData);
+        book = await booksApi.update(editingBook.id, bookData);
       } else {
-        await booksApi.create(bookData);
+        book = await booksApi.create(bookData);
       }
+      
+      // Upload de l'image si un fichier a été sélectionné
+      if (imageFile && book) {
+        await booksApi.uploadImage(book.id, imageFile);
+      }
+      
       loadBooks();
       resetForm();
     } catch (err) {
@@ -63,7 +86,8 @@ function BookManagement() {
       isbn: book.isbn || '',
       description: book.description || '',
       publicationYear: book.publicationYear || '',
-      availability: book.availability
+      availability: book.availability,
+      typeId: book.typeId || 1
     });
     setShowForm(true);
   };
@@ -80,9 +104,10 @@ function BookManagement() {
   };
 
   const resetForm = () => {
-    setFormData({ title: '', author: '', isbn: '', description: '', publicationYear: '', availability: 'available' });
+    setFormData({ title: '', author: '', isbn: '', description: '', publicationYear: '', availability: 'available', typeId: 1 });
     setEditingBook(null);
     setShowForm(false);
+    setImageFile(null);
   };
 
   return (
@@ -143,6 +168,19 @@ function BookManagement() {
                 />
               </div>
               <div className="form-group">
+                <label>Type de livre</label>
+                <select
+                  value={formData.typeId}
+                  onChange={(e) => setFormData({ ...formData, typeId: parseInt(e.target.value) })}
+                >
+                  {bookTypes.map(type => (
+                    <option key={type.id} value={type.id}>
+                      {type.name} (Niveau {type.minAccessLevel})
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="form-group">
                 <label>Disponibilite</label>
                 <select
                   value={formData.availability}
@@ -152,6 +190,21 @@ function BookManagement() {
                   <option value="borrowed">Emprunte</option>
                   <option value="reserved">Reserve</option>
                 </select>
+              </div>
+              <div className="form-group">
+                <label>📷 Image de couverture</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setImageFile(e.target.files[0])}
+                  className="file-input"
+                />
+                {imageFile && (
+                  <p className="file-selected">📎 {imageFile.name}</p>
+                )}
+                {editingBook?.imagePath && !imageFile && (
+                  <p className="current-image">✓ Image actuelle: {editingBook.imagePath}</p>
+                )}
               </div>
               <div className="form-actions">
                 <button type="button" onClick={resetForm} className="btn-secondary">
@@ -176,7 +229,9 @@ function BookManagement() {
               <th>Auteur</th>
               <th>ISBN</th>
               <th>Annee</th>
+              <th>Type</th>
               <th>Disponible</th>
+              <th>Emprunteur</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -188,9 +243,21 @@ function BookManagement() {
                 <td>{book.isbn || '-'}</td>
                 <td>{book.publicationYear || '-'}</td>
                 <td>
+                  <span className={`book-type level-${book.minAccessLevel}`}>
+                    {book.typeName || '-'}
+                  </span>
+                </td>
+                <td>
                   <span className={`status ${book.availability === 'available' ? 'available' : 'unavailable'}`}>
                     {book.availability === 'available' ? 'Oui' : 'Non'}
                   </span>
+                </td>
+                <td>
+                  {book.availability !== 'available' ? (
+                    <span className="borrower-name">{getBorrowerName(book.id) || '-'}</span>
+                  ) : (
+                    <span className="no-borrower">-</span>
+                  )}
                 </td>
                 <td>
                   <button onClick={() => handleEdit(book)} className="btn-edit">

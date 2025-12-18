@@ -4,29 +4,53 @@
   align-items: center;
   min-height: 100vh;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  position: relative;
+  overflow: hidden;
 }
 
 .login-card {
-  background: white;
-  padding: 40px;
-  border-radius: 10px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  padding: 50px;
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
   width: 100%;
-  max-width: 400px;
+  max-width: 450px;
+  position: relative;
+  z-index: 1;
+  animation: slideInUp 0.6s ease-out;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .login-card h1 {
-  color: #333;
-  margin-bottom: 10px;
+  color: var(--text-primary);
+  margin-bottom: 12px;
   text-align: center;
+  font-size: 2rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .login-card h2 {
-  color: #666;
-  margin-bottom: 30px;
+  color: var(--text-secondary);
+  margin-bottom: 40px;
   text-align: center;
-  font-size: 20px;
-  font-weight: 400;
+  font-size: 18px;
+  font-weight: 500;
 }
 
 .login-card form {
@@ -35,35 +59,52 @@
 }
 
 .login-card .form-group {
-  margin-bottom: 20px;
+  margin-bottom: 25px;
 }
 
-.login-card button[type="submit"] {
-  margin-top: 10px;
-  width: 100%;
+.login-card .form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 14px;
 }
 
 .login-card .form-group input {
   width: 100%;
-  padding: 12px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  font-size: 16px;
+  padding: 14px 18px;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  font-size: 15px;
   box-sizing: border-box;
-  background-color: #f8f9fa;
-  color: #333;
-  transition: all 0.3s;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .login-card .form-group input::placeholder {
-  color: #999;
+  color: var(--text-tertiary);
 }
 
 .login-card .form-group input:focus {
   outline: none;
-  border-color: #007bff;
+  border-color: var(--primary);
   background-color: #fff;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05);
+  transform: translateY(-2px);
+}
+
+.login-card button[type="submit"] {
+  margin-top: 15px;
+  width: 100%;
+  padding: 14px;
+  font-size: 16px;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.3);
+}
+
+.login-card button[type="submit"]:hover {
+  box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.4);
 }
 
 /* Responsive Design */
@@ -96,5 +137,52 @@
 
   .login-card h2 {
     font-size: 16px;
+  }
+}
+
+/* Lien d'inscription */
+.register-link {
+  text-align: center;
+  margin-top: 25px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.register-link a {
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.3s;
+}
+
+.register-link a:hover {
+  color: var(--primary-dark);
+  text-decoration: underline;
+}
+
+/* Message de succès */
+.success-message {
+  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+  color: #065f46;
+  padding: 12px 16px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  text-align: center;
+  font-weight: 500;
+  border: 1px solid #6ee7b7;
+}
+
+/* Form row pour prénom/nom côte à côte */
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+@media (max-width: 480px) {
+  .form-row {
+    grid-template-columns: 1fr;
   }
 }

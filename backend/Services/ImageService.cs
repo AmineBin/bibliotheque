@@ -3,53 +3,80 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
-namespace Services
+namespace Bibliotheque.Api.Services;
+
+public interface IImageService
 {
-    public class ImageService
+    Task<string> SaveImageAsync(int bookId, IFormFile file);
+    Task<(Stream Stream, string ContentType)> GetImageAsync(string fileName);
+    Task<bool> DeleteImageAsync(string fileName);
+}
+
+public class ImageService : IImageService
+{
+    private readonly string _imagesFolder;
+
+    public ImageService(IWebHostEnvironment env)
     {
-        private readonly string _imagesFolder;
+        _imagesFolder = Path.Combine(env.ContentRootPath, "wwwroot", "images", "books");
+        Directory.CreateDirectory(_imagesFolder);
+    }
 
-        public ImageService(string imagesFolder)
+    public async Task<string> SaveImageAsync(int bookId, IFormFile file)
+    {
+        if (file == null || file.Length == 0) 
+            throw new ArgumentException("Fichier invalide", nameof(file));
+        
+        var ext = Path.GetExtension(file.FileName);
+        var safeExt = string.IsNullOrWhiteSpace(ext) ? ".jpg" : ext.ToLowerInvariant();
+        var fileName = $"book_{bookId}_{Guid.NewGuid()}{safeExt}";
+        var path = Path.Combine(_imagesFolder, fileName);
+
+        using var stream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None);
+        await file.CopyToAsync(stream);
+
+        return fileName;
+    }
+
+    public Task<(Stream Stream, string ContentType)> GetImageAsync(string fileName)
+    {
+        var path = Path.Combine(_imagesFolder, fileName);
+        if (!File.Exists(path)) 
+            throw new FileNotFoundException("Image introuvable", path);
+
+        var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+        var contentType = GetMimeType(path);
+
+        return Task.FromResult<(Stream Stream, string ContentType)>((fs, contentType));
+    }
+
+    public Task<bool> DeleteImageAsync(string fileName)
+    {
+        var path = Path.Combine(_imagesFolder, fileName);
+        if (!File.Exists(path)) 
+            return Task.FromResult(false);
+
+        try
         {
-            _imagesFolder = imagesFolder ?? throw new ArgumentNullException(nameof(imagesFolder));
-            Directory.CreateDirectory(_imagesFolder);
+            File.Delete(path);
+            return Task.FromResult(true);
         }
-
-        public async Task<string> SaveToDiskAsync(Guid livreId, IFormFile file)
+        catch
         {
-            if (file == null || file.Length == 0) throw new ArgumentException("Fichier invalide", nameof(file));
-            var ext = Path.GetExtension(file.FileName);
-            var safeExt = string.IsNullOrWhiteSpace(ext) ? ".bin" : ext.ToLowerInvariant();
-            var fileName = $"{livreId}{safeExt}";
-            var path = Path.Combine(_imagesFolder, fileName);
-
-            using var stream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None);
-            await file.CopyToAsync(stream);
-
-            return fileName;
+            return Task.FromResult(false);
         }
+    }
 
-        public Task<(Stream Stream, string ContentType)> GetStreamAsync(string fileName)
+    private string GetMimeType(string path)
+    {
+        var ext = Path.GetExtension(path).ToLowerInvariant();
+        return ext switch
         {
-            var path = Path.Combine(_imagesFolder, fileName);
-            if (!File.Exists(path)) throw new FileNotFoundException("Image introuvable", path);
-
-            var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
-            var contentType = GetMimeType(path);
-
-            return Task.FromResult<(Stream Stream, string ContentType)>((fs, contentType));
-        }
-
-        private string GetMimeType(string path)
-        {
-            var ext = Path.GetExtension(path).ToLowerInvariant();
-            return ext switch
-            {
-                ".jpg" or ".jpeg" => "image/jpeg",
-                ".png" => "image/png",
-                ".gif" => "image/gif",
-                _ => "application/octet-stream"
-            };
-        }
+            ".jpg" or ".jpeg" => "image/jpeg",
+            ".png" => "image/png",
+            ".gif" => "image/gif",
+            ".webp" => "image/webp",
+            _ => "application/octet-stream"
+        };
     }
 }

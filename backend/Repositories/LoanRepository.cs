@@ -12,7 +12,9 @@ public interface ILoanRepository
     Task<Loan?> GetActiveLoanForBookAsync(int bookId);
     Task<Loan> CreateAsync(Loan loan);
     Task<bool> ReturnBookAsync(int loanId);
+    Task<bool> ReturnBookByBookIdAsync(int bookId);
     Task<LoanStats> GetStatsAsync();
+    Task<IEnumerable<(string Title, int LoanCount)>> GetPopularBooksAsync(int limit = 5);
 }
 
 public class LoanStats
@@ -122,6 +124,18 @@ public class LoanRepository : ILoanRepository
         return affected > 0;
     }
 
+    public async Task<bool> ReturnBookByBookIdAsync(int bookId)
+    {
+        using var connection = _context.CreateConnection();
+        const string sql = @"
+            UPDATE loans 
+            SET return_date = CURDATE(), status = 'returned'
+            WHERE book_id = @BookId AND status = 'active'";
+        
+        var affected = await connection.ExecuteAsync(sql, new { BookId = bookId });
+        return affected > 0;
+    }
+
     public async Task<LoanStats> GetStatsAsync()
     {
         using var connection = _context.CreateConnection();
@@ -134,5 +148,20 @@ public class LoanRepository : ILoanRepository
                 (SELECT COUNT(*) FROM users) AS TotalUsers";
         
         return await connection.QueryFirstAsync<LoanStats>(sql);
+    }
+
+    public async Task<IEnumerable<(string Title, int LoanCount)>> GetPopularBooksAsync(int limit = 5)
+    {
+        using var connection = _context.CreateConnection();
+        const string sql = @"
+            SELECT b.title AS Title, COUNT(l.id) AS LoanCount
+            FROM books b
+            INNER JOIN loans l ON b.id = l.book_id
+            GROUP BY b.id, b.title
+            ORDER BY COUNT(l.id) DESC
+            LIMIT @Limit";
+        
+        var results = await connection.QueryAsync<(string, int)>(sql, new { Limit = limit });
+        return results;
     }
 }

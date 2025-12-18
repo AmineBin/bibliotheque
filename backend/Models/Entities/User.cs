@@ -12,4 +12,5 @@ public class User
     
     // Navigation
     public string? RoleName { get; set; }
+    public int AccessLevel { get; set; } = 1;
 }

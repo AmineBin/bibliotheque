@@ -79,7 +79,8 @@ public class AuthService : IAuthService
             new Claim(ClaimTypes.Email, user.Email),
             new Claim(ClaimTypes.GivenName, user.FirstName),
             new Claim(ClaimTypes.Surname, user.LastName),
-            new Claim(ClaimTypes.Role, user.RoleName ?? "Student")
+            new Claim(ClaimTypes.Role, user.RoleName ?? "Student"),
+            new Claim("AccessLevel", user.AccessLevel.ToString())
         };
 
         var token = new JwtSecurityToken(
@@ -99,6 +100,7 @@ public class AuthService : IAuthService
         Email = user.Email,
         FirstName = user.FirstName,
         LastName = user.LastName,
-        Role = user.RoleName ?? "Student"
+        Role = user.RoleName ?? "Student",
+        AccessLevel = user.AccessLevel
     };
 }

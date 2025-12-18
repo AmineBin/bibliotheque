@@ -10,6 +10,9 @@ public class Book
     public int? PublicationYear { get; set; }
     public string Availability { get; set; } = "available";
     public string? ImagePath { get; set; }
+    public int TypeId { get; set; } = 1;
+    public string? TypeName { get; set; }
+    public int MinAccessLevel { get; set; } = 1;
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 }
